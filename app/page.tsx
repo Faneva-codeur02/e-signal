@@ -1,101 +1,119 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [position, setPosition] = useState<{
+    lat: number | null;
+    lng: number | null;
+  }>({ lat: null, lng: null });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleGeolocation = () => {
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setPosition({
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+      });
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!position.lat || !position.lng) {
+      alert("Veuillez activer la géolocalisation");
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+
+    try {
+      const response = await fetch("/api/incidents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.get("title"),
+          description: formData.get("description"),
+          category: formData.get("category"),
+          latitude: position.lat,
+          longitude: position.lng,
+          mediaUrl: "",
+        }),
+      });
+
+      if (!response.ok) throw new Error("Echec de la requête");
+      alert("Incident signalé avec succès!");
+    } catch (error) {
+      console.error(error);
+      alert("Erreur lors du signalement");
+    }
+  };
+
+  return (
+    <main className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Signaler un incident</h1>
+
+      <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
+        <div>
+          <label className="block mb-2">Titre</label>
+          <input
+            type="text"
+            name="title"
+            className="w-full p-2 border rounded"
+            required
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <div>
+          <label className="block mb-2">Déscription</label>
+          <textarea
+            name="description"
+            className="w-full p-2 border rounded"
+            required
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+
+        <div>
+          <label className="block mb-2">Catégorie</label>
+          <select name="category" className="w-full p-2 border rounded">
+            <option value="Accident">Accident</option>
+            <option value="Inondation">Inondation</option>
+            <option value="Déchets">Déchets sauvages</option>
+            <option value="Feu">Feu</option>
+          </select>
+        </div>
+
+        <div>
+          <button
+            type="button"
+            onClick={handleGeolocation}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+            disabled={!!position.lat}
+          >
+            {position.lat ? "Localisation confirmée" : "Obtenir ma position"}
+          </button>
+          {position.lat && (
+            <p className="mt-2 text-sm text-green-600">
+              Position enregistrée: {position.lat?.toFixed(4)},{" "}
+              {position.lng?.toFixed(4)}
+            </p>
+          )}
+          {!position.lat && (
+            <p className="mt-2 text-sm text-red-600">
+              Cliquez pour autoriser la géolocalisation
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          Envoyer
+        </button>
+      </form>
+    </main>
   );
 }
