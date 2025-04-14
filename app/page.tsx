@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
+
+const IncidentMap = dynamic(() => import('../app/components/IncidentMap'), {
+  ssr: false
+})
 
 export default function Home() {
   const [position, setPosition] = useState<{
     lat: number | null;
     lng: number | null;
   }>({ lat: null, lng: null });
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Accident");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleGeolocation = () => {
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -20,36 +30,24 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!position.lat || !position.lng) {
-      alert("Veuillez activer la géolocalisation");
+    if (position.lat === null || position.lng === null) {
+      alert ("Veuillez d'abord obtenir votre position.");
       return;
     }
 
-    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    const formData = new FormData()
+    formData.append('title', title)
+    formData.append('description', description)
+    formData.append('category', category)
+    formData.append('latitude', position.lat.toString())
+    formData.append('longitude', position.lng.toString() )
+    if (selectedFile) formData.append('media', selectedFile)
 
-    try {
-      const response = await fetch("/api/incidents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: formData.get("title"),
-          description: formData.get("description"),
-          category: formData.get("category"),
-          latitude: position.lat,
-          longitude: position.lng,
-          mediaUrl: "",
-        }),
-      });
-
-      if (!response.ok) throw new Error("Echec de la requête");
-      alert("Incident signalé avec succès!");
-    } catch (error) {
-      console.error(error);
-      alert("Erreur lors du signalement");
-    }
-  };
+    const response  = await fetch('/api/incidents', {
+      method: 'POST',
+      body: formData
+    })
+  }
 
   return (
     <main className="container mx-auto p-4">
@@ -63,6 +61,8 @@ export default function Home() {
             name="title"
             className="w-full p-2 border rounded"
             required
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
@@ -72,12 +72,29 @@ export default function Home() {
             name="description"
             className="w-full p-2 border rounded"
             required
+            value={description}
+            onChange={(e) => setDescription(e.target.value) }
           />
         </div>
 
         <div>
+          <label className="block mb-2">Preuve</label>
+          <input 
+              type="file" 
+              accept="image/*" 
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              className="mt-2"
+            />
+        </div>
+
+        <div>
           <label className="block mb-2">Catégorie</label>
-          <select name="category" className="w-full p-2 border rounded">
+          <select 
+            name="category" 
+            className="w-full p-2 border rounded"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
             <option value="Accident">Accident</option>
             <option value="Inondation">Inondation</option>
             <option value="Déchets">Déchets sauvages</option>
@@ -114,6 +131,8 @@ export default function Home() {
           Envoyer
         </button>
       </form>
+
+      <IncidentMap incidents={[]}/>
     </main>
   );
 }
