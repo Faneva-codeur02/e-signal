@@ -14,7 +14,7 @@ L.Icon.Default.mergeOptions({
 })
 
 //centrage automatique
-function RecenterMap({ lat, lng }: { lat: number, lng: number}) {
+function RecenterMap({ lat, lng }: { lat: number, lng: number }) {
   const map = useMap()
 
   useEffect(() => {
@@ -26,31 +26,31 @@ function RecenterMap({ lat, lng }: { lat: number, lng: number}) {
   return null
 }
 
-export default function IncidentMap({ 
+export default function IncidentMap({
   incidents,
-  userPosition 
-}: { 
+  userPosition
+}: {
   incidents: any[],
   userPosition: { lat: number | null, lng: number | null }
 }) {
   return (
-    <MapContainer 
+    <MapContainer
       center={[-18.8792, 47.5079]} // Antananarivo
-      zoom={13} 
+      zoom={13}
       className="h-[500px] w-full mt-8"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      
+
       {/* Afficher la position utilisateur si disponible */}
       {userPosition.lat && userPosition.lng && (
         <>
           <Marker position={[userPosition.lat, userPosition.lng]}>
             <Popup>Votre position actuelle</Popup>
           </Marker>
-          <RecenterMap lat={userPosition.lat} lng={userPosition.lng}/>
+          <RecenterMap lat={userPosition.lat} lng={userPosition.lng} />
         </>
       )}
 
@@ -64,9 +64,9 @@ export default function IncidentMap({
             <h3 className="font-bold">{incident.title}</h3>
             <p>{incident.description}</p>
             {incident.mediaUrl && (
-              <img 
-                src={incident.mediaUrl} 
-                alt="Preuve" 
+              <img
+                src={incident.mediaUrl}
+                alt="Preuve"
                 className="mt-2 max-h-32"
               />
             )}

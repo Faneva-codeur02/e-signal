@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     if (file) {
       const buffer = Buffer.from(await file.arrayBuffer())
       const result = await uploadFile(buffer) as { secure_url: string }
-      mediaUrl = result.secure_url 
+      mediaUrl = result.secure_url
     }
 
     const incident = await prisma.incident.create({
@@ -26,10 +26,35 @@ export async function POST(request: Request) {
         mediaUrl
       }
     })
-    
+
     return NextResponse.json(incident)
   } catch (error) {
     console.error(error)
-    return NextResponse.json({ error: 'Erreur serveur' }, {status: 500})
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  }
+}
+
+export async function GET() {
+  try {
+    const incidents = await prisma.incident.findMany({
+      orderBy: { createAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        latitude: true,
+        longitude: true,
+        status: true,
+        mediaUrl: true,
+        createAt: true
+      }
+    })
+    return NextResponse.json(incidents)
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Erreur de récupération des incidents" },
+      { status: 500 }
+    )
   }
 }
