@@ -14,14 +14,34 @@ datasource db {
 }
 
 model Incident {
-  id             Int @id @default(autoincrement())
-  title          String
-  description    String
-  category       String
-  latitude       Float
-  longitude      Float
-  status         String @default("En attente")
-  mediaUrl       String?
-  createAt       DateTime @default(now())
-  updateAt       DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  category    String
+  latitude    Float
+  longitude   Float
+  status      String   @default("En attente")
+  mediaUrl    String?
+  createAt    DateTime @default(now())
+  updateAt    DateTime @updatedAt
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String?
+  email     String     @unique
+  password  String
+  role      Role       @default(CITOYEN)
+  incidents Incident[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+enum Role {
+  CITOYEN
+  MODERATEUR
+  ADMIN
 }
