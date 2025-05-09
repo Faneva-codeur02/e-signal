@@ -7,13 +7,13 @@ import { authOptions } from '../[...nextauth]/route'
 export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
 
-    // Seul un admin peut créer des comptes avec des rôles élevés
-    if (!session || session.user.role !== 'ADMIN') {
-        return NextResponse.json(
-            { error: 'Non autorisé' },
-            { status: 403 }
-        )
-    }
+    // // Seul un admin peut créer des comptes avec des rôles élevés
+    // if (!session || session.user.role !== 'ADMIN') {
+    //     return NextResponse.json(
+    //         { error: 'Non autorisé' },
+    //         { status: 403 }
+    //     )
+    // }
 
     try {
         const body = await request.json()

@@ -25,7 +25,7 @@ export default function LoginPage() {
         if (result?.error) {
             setError(result.error)
         } else {
-            window.location.href = '/'
+            window.location.href = '/report'
         }
     }
 

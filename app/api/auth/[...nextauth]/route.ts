@@ -3,7 +3,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma from "@/lib/prisma"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
-import type { User } from "@prisma/client"
 
 export const authOptions: AuthOptions = {
     adapter: PrismaAdapter(prisma),
@@ -65,7 +64,7 @@ export const authOptions: AuthOptions = {
         signIn: "/auth/login",
         error: "/auth/error"
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET ?? (() => { throw new Error("NEXTAUTH_SECRET is not set") })(),
     session: { strategy: "jwt" }
 }
 
