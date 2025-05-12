@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from 'next/link'
 import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { signIn, getSession } from "next-auth/react"
 
 
 export default function LoginPage() {
@@ -25,7 +25,15 @@ export default function LoginPage() {
         if (result?.error) {
             setError(result.error)
         } else {
-            window.location.href = '/report'
+            // récupérer la session pour lire le rôle
+            const session = await getSession()
+            console.log("SESSION:", session)
+
+            if (session?.user?.role === 'ADMIN') {
+                window.location.href = '/admin' // redirection admin
+            } else {
+                window.location.href = '/report' // redirection user normal
+            }
         }
     }
 

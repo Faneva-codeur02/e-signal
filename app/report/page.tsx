@@ -24,13 +24,22 @@ export default function ReportPage() {
     })
 
     useEffect(() => {
+        if (status === 'loading') return
+
         if (status === "unauthenticated") {
             router.push("/")
         }
-    }, [status, router])
 
-    if (status === "loading") {
-        return <p>Chargement de la session...</p>
+        if (!session) {
+            router.push('/auth/login') // redirection si pas connecté
+        } else if (session.user?.role === 'ADMIN') {
+            router.push('/admin') // redirection si admin
+        }
+
+    }, [session, status, router])
+
+    if (status === 'loading' || !session || session.user?.role === 'ADMIN') {
+        return <p className="text-center py-10">Chargement de la session...</p>
     }
 
     const handleGeolocation = () => {
