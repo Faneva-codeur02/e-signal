@@ -1,20 +1,29 @@
 'use client'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from 'next/link'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signIn, getSession } from "next-auth/react"
-
 
 export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+    const [loadingForm, setLoadingForm] = useState(false)
+    const [loadingPage, setLoadingPage] = useState(true)
+    const [registered, setRegistered] = useState<string | null>(null)
     const searchParams = useSearchParams()
-    const registered = searchParams.get('registered')
+
+    useEffect(() => {
+        setTimeout(() => {
+            setRegistered(searchParams.get('registered'))
+            setLoadingPage(false)
+        }, 1000)
+    }, [searchParams])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
+        setLoadingForm(true)
 
         const result = await signIn('credentials', {
             redirect: false,
@@ -24,6 +33,7 @@ export default function LoginPage() {
 
         if (result?.error) {
             setError(result.error)
+            setLoadingForm(false)
         } else {
             // récupérer la session pour lire le rôle
             const session = await getSession()
@@ -35,6 +45,20 @@ export default function LoginPage() {
                 window.location.href = '/report' // redirection user normal
             }
         }
+    }
+
+    if (loadingPage) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="bg-white p-8 rounded shadow-md w-full max-w-md animate-pulse space-y-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/3 mx-auto"></div>
+                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                    <div className="h-10 bg-gray-300 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto mt-6"></div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -79,9 +103,15 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        disabled={loadingForm}
+                        className={`w-full flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded transition ${loadingForm ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                            }`}
                     >
-                        Se connecter
+                        {loadingForm ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            'Se connecter'
+                        )}
                     </button>
                 </form>
 

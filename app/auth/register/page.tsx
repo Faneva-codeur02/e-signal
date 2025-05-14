@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -12,10 +12,20 @@ export default function RegisterPage() {
     })
     const [error, setError] = useState('')
     const router = useRouter()
+    const [loadingForm, setLoadingForm] = useState(false)
+    const [loadingPage, setLoadingPage] = useState(true)
+
+    useEffect(() => {
+        setTimeout(() => {
+            setLoadingPage(false)
+        }, 1000)
+    }, [])
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
+        setLoadingForm(true)
 
         try {
             const response = await fetch('/api/auth/register', {
@@ -30,17 +40,35 @@ export default function RegisterPage() {
                 const data = await response.json()
                 throw new Error(data.error || "Erreur lors de l'inscription")
             }
-
+            setLoadingForm(false)
             // Rediriger vers la page de connexion après inscription réussie
             router.push('/auth/login?registered=true')
+
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message)
+                setLoadingForm(false)
             } else {
                 setError("Une erreur inconnue est survenue")
+                setLoadingForm(false)
             }
         }
     }
+
+    if (loadingPage) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="bg-white p-8 rounded shadow-md w-full max-w-md animate-pulse space-y-4">
+                    <div className="h-6 bg-gray-200 rounded w-1/3 mx-auto"></div>
+                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                    <div className="h-10 bg-gray-300 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto mt-6"></div>
+                </div>
+            </div>
+        )
+    }
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -92,9 +120,15 @@ export default function RegisterPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+                        disabled={loadingForm}
+                        className={`w-full flex items-center justify-center bg-blue-600 text-white py-2 px-4 rounded transition ${loadingForm ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'
+                            }`}
                     >
-                        S'inscrire
+                        {loadingForm ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            'S\'inscrire'
+                        )}
                     </button>
                 </form>
 
