@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { MapPin, Upload, FileText, LogOut } from "lucide-react"
 
 const IncidentMap = dynamic(
     () => import('@/components/IncidentMap'),
@@ -22,6 +23,8 @@ export default function ReportPage() {
         category: 'Accident',
         media: null as File | null
     })
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLocating, setIsLocating] = useState(false);
 
     useEffect(() => {
         if (status === 'loading') return
@@ -39,24 +42,58 @@ export default function ReportPage() {
     }, [session, status, router])
 
     if (status === 'loading' || !session || session.user?.role === 'ADMIN') {
-        return <p className="text-center py-10">Chargement de la session...</p>
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="w-full max-w-4xl p-4 animate-pulse">
+                    <div className="h-6 bg-gray-300 rounded w-1/3 mb-6"></div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Form Skeleton */}
+                        <div className="bg-white p-6 rounded-lg shadow-md space-y-4">
+                            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                            <div className="h-24 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                            <div className="h-10 bg-gray-200 rounded"></div>
+                            <div className="h-12 bg-gray-300 rounded"></div>
+                        </div>
+                        {/* Map Skeleton */}
+                        <div className="bg-white p-1 rounded-lg shadow-md">
+                            <div className="h-96 bg-gray-200 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     const handleGeolocation = () => {
+        setIsLocating(true);
         navigator.geolocation.getCurrentPosition(
-            (pos) => setPosition({
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude
-            }),
-            (error) => alert(`Erreur de géolocalisation: ${error.message}`)
+            (pos) => {
+                setPosition({
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                })
+                setIsLocating(false);
+            },
+
+            (error) => {
+                alert(`Erreur de géolocalisation: ${error.message}`);
+                setIsLocating(false);
+            }
         )
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setIsSubmitting(true);
 
         if (!position.lat || !position.lng) {
             alert('Veuillez activer la géolocalisation')
+            setIsSubmitting(false);
             return
         }
 
@@ -85,39 +122,45 @@ export default function ReportPage() {
             }
         } catch (error) {
             console.error('Erreur:', error)
+        } finally {
+            setIsSubmitting(false)
         }
     }
 
+
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
             <div className="container mx-auto px-4 py-8">
                 {session && (
                     <div className="flex justify-end mb-4">
                         <button
                             onClick={() => signOut({ callbackUrl: '/' })}
-                            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded flex items-center gap-2"
                         >
+                            <LogOut size={16} />
                             Se déconnecter
                         </button>
                     </div>
                 )}
-                <h1 className="text-3xl font-bold text-center mb-8">Signaler un incident à Madagascar</h1>
+                <h1 className="text-3xl font-bold text-center mb-10">Signaler un incident à Madagascar</h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     {/* Colonne de gauche - Formulaire */}
                     <div className="bg-white p-6 rounded-lg shadow-md">
                         <h2 className="text-xl font-semibold mb-4">Formulaire de signalement</h2>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
+                            <div className="relative">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Titre de l'incident</label>
                                 <input
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                                    className="pl-10 w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                                     placeholder="Ex: Accident routier"
                                     required
                                 />
+                                <FileText className="absolute left-3 top-10 text-gray-400" size={18} />
                             </div>
 
                             <div>
@@ -158,6 +201,13 @@ export default function ReportPage() {
                                 </div>
                             </div>
 
+                            {formData.media && (
+                                <div className="mt-2">
+                                    <p className="text-sm font-medium text-gray-700">Aperçu :</p>
+                                    <img src={URL.createObjectURL(formData.media)} alt="Aperçu du fichier" className="h-32 object-cover rounded mt-1" />
+                                </div>
+                            )}
+
                             <div className="bg-blue-50 p-4 rounded-md">
                                 <div className="flex items-center space-x-3 mb-2">
                                     <button
@@ -165,11 +215,12 @@ export default function ReportPage() {
                                         onClick={handleGeolocation}
                                         className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
                                     >
-                                        <span>📍</span>
+                                        <MapPin size={16} />
                                         <span>Localiser automatiquement</span>
                                     </button>
 
-                                    {position.lat && (
+                                    {isLocating && <p className="text-sm text-blue-600 animate-pulse">Localisation en cours...</p>}
+                                    {position.lat && !isLocating && (
                                         <span className="text-sm text-gray-600">
                                             Position: {position.lat.toFixed(4)}, {position.lng?.toFixed(4)}
                                         </span>
@@ -182,9 +233,36 @@ export default function ReportPage() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors font-medium"
+                                disabled={isSubmitting}
+                                className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 transition-colors font-medium flex items-center justify-center"
                             >
-                                Envoyer le signalement
+                                {isSubmitting ? (
+                                    <>
+                                        <svg
+                                            className="animate-spin h-5 w-5 mr-3 text-white"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <circle
+                                                className="opacity-25"
+                                                cx="12"
+                                                cy="12"
+                                                r="10"
+                                                stroke="currentColor"
+                                                strokeWidth="4"
+                                            ></circle>
+                                            <path
+                                                className="opacity-75"
+                                                fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                            ></path>
+                                        </svg>
+                                        Envoi en cours...
+                                    </>
+                                ) : (
+                                    'Envoyer le signalement'
+                                )}
                             </button>
                         </form>
                     </div>
