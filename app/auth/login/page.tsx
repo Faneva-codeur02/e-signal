@@ -42,7 +42,7 @@ export default function LoginPage() {
             if (session?.user?.role === 'ADMIN') {
                 window.location.href = '/admin' // redirection admin
             } else {
-                window.location.href = '/report' // redirection user normal
+                window.location.href = '/citoyen/accueil' // redirection user normal
             }
         }
     }
