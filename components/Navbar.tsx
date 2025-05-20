@@ -15,6 +15,7 @@ export default function Navbar() {
                     <Link href="/citoyen/accueil" className="text-gray-700 font-semibold hover:text-blue-600">Accueil</Link>
                     <Link href="/citoyen/profil" className="text-gray-700 font-semibold hover:text-blue-600">Profil</Link>
                     <Link href="/citoyen/mes-signalements" className="text-gray-700 font-semibold hover:text-blue-600">Mes signalements</Link>
+                    <Link href="/citoyen/report" className="text-gray-700 font-semibold hover:text-blue-600">Signaler un incident</Link>
                 </div>
 
                 {/* Droite - User info ou Connexion */}

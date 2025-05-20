@@ -99,12 +99,20 @@ export default function ReportPage() {
             return
         }
 
+        if (!session?.user?.id) {
+            alert("Impossible de trouver l'identifiant de l'utilisateur.")
+            setIsSubmitting(false)
+            return
+        }
+
+
         const data = new FormData()
         data.append('title', formData.title)
         data.append('description', formData.description)
         data.append('category', formData.category)
         data.append('latitude', position.lat.toString())
         data.append('longitude', position.lng.toString())
+        data.append('userId', session.user.id)
         if (formData.media) data.append('media', formData.media)
 
         try {
