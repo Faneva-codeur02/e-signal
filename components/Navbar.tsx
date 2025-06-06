@@ -12,7 +12,7 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto flex justify-between items-center">
                 {/* Gauche - Liens de navigation */}
                 <div className="flex space-x-6">
-                    <Link href="/(groupe)/citoyen" className="text-gray-700 font-semibold hover:text-blue-600">Accueil</Link>
+                    <Link href="/citoyen/accueil" className="text-gray-700 font-semibold hover:text-blue-600">Accueil</Link>
                     <Link href="/citoyen/profil" className="text-gray-700 font-semibold hover:text-blue-600">Profil</Link>
                     <Link href="/citoyen/mes-signalements" className="text-gray-700 font-semibold hover:text-blue-600">Mes signalements</Link>
                     <Link href="/citoyen/report" className="text-gray-700 font-semibold hover:text-blue-600">Signaler un incident</Link>
