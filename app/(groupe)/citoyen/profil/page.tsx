@@ -4,9 +4,7 @@ import { authOptions } from "@/lib/authOptions"
 import { redirect } from "next/navigation"
 import Navbar from "@/components/Navbar"
 import LogoutButton from "@/components/LogoutButton"
-import DeleteIncidentButton from "@/components/DeleteIncidentButton"
 import prisma from "@/lib/prisma"
-import Link from "next/link"
 import ChangePasswordForm from "@/components/ChangePasswordForm"
 
 export default async function ProfilPage() {
@@ -51,33 +49,6 @@ export default async function ProfilPage() {
                 <div className="mb-6 flex space-x-4">
                     <ChangePasswordForm />
                 </div>
-
-                <h2 className="text-2xl font-semibold mb-4">Mes signalements</h2>
-
-                {user.incidents.length === 0 ? (
-                    <p className="text-gray-500">Vous n'avez pas encore créé de signalements.</p>
-                ) : (
-                    <ul className="space-y-4">
-                        {user.incidents.map((incident) => (
-                            <li key={incident.id} className="border p-4 rounded shadow-sm flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-xl font-semibold">{incident.title}</h3>
-                                    <p className="text-gray-600">{incident.description}</p>
-                                    <p className="text-sm text-gray-500">Statut : {incident.status}</p>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <Link
-                                        href={`/incident/${incident.id}`}
-                                        className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-                                    >
-                                        Voir
-                                    </Link>
-                                    <DeleteIncidentButton incidentId={incident.id} />
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
             </main>
         </div>
     )
