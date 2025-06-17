@@ -206,7 +206,21 @@ export default function ReportPage() {
                                 {formData.media && (
                                     <div className="mt-2">
                                         <p className="text-sm font-medium text-gray-700">Aperçu :</p>
-                                        <img src={URL.createObjectURL(formData.media)} alt="Aperçu du fichier" className="h-32 object-cover rounded mt-1" />
+                                        {formData.media.type.startsWith('image/') ? (
+                                            <img
+                                                src={URL.createObjectURL(formData.media)}
+                                                alt="Aperçu du fichier"
+                                                className="h-32 object-cover rounded mt-1"
+                                            />
+                                        ) : formData.media.type.startsWith('video/') ? (
+                                            <video
+                                                src={URL.createObjectURL(formData.media)}
+                                                controls
+                                                className="h-32 object-cover rounded mt-1"
+                                            />
+                                        ) : (
+                                            <p className="text-red-500 text-sm">Fichier non pris en charge</p>
+                                        )}
                                     </div>
                                 )}
 

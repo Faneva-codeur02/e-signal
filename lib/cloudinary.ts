@@ -6,15 +6,16 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 })
 
-export async function uploadFile(file: Buffer) {
+export async function uploadFile(buffer: Buffer, mimetype: string) {
+  const resourceType = mimetype.startsWith('video/') ? 'video' : 'image';
+
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'incidents' },
+    cloudinary.uploader.upload_stream(
+      { resource_type: resourceType },
       (error, result) => {
-        if (result) resolve(result)
-        else reject(error)
+        if (error) return reject(error);
+        resolve(result);
       }
-    )
-    uploadStream.end(file)
-  })
+    ).end(buffer);
+  });
 }

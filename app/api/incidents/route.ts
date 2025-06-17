@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
     if (file) {
       const buffer = Buffer.from(await file.arrayBuffer())
-      const result = await uploadFile(buffer) as { secure_url: string }
+      const result = await uploadFile(buffer, file.type) as { secure_url: string }
       mediaUrl = result.secure_url
     }
 
