@@ -28,10 +28,12 @@ function RecenterMap({ lat, lng }: { lat: number, lng: number }) {
 
 export default function IncidentMap({
   incidents,
-  userPosition
+  userPosition,
+  centerOverride
 }: {
   incidents: any[],
-  userPosition: { lat: number | null, lng: number | null }
+  userPosition: { lat: number | null, lng: number | null },
+  centerOverride?: { lat: number, lng: number } | null
 }) {
   return (
     <MapContainer
@@ -43,6 +45,10 @@ export default function IncidentMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {/* Fly to centerOverride if exists */}
+      {centerOverride && <RecenterMap lat={centerOverride.lat} lng={centerOverride.lng} />}
+
 
       {/* Afficher la position utilisateur si disponible */}
       {userPosition.lat && userPosition.lng && (

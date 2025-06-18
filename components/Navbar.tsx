@@ -20,7 +20,7 @@ export default function Navbar() {
     ]
 
     return (
-        <nav className="bg-white shadow-md">
+        <nav className="bg-white shadow-md fixed top-0 w-full z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     {/* Logo + menu */}
@@ -92,8 +92,8 @@ export default function Navbar() {
                                 href={href}
                                 onClick={() => setMenuOpen(false)}
                                 className={`font-medium ${pathname === href
-                                        ? 'text-blue-600 underline'
-                                        : 'text-gray-700 hover:text-blue-600'
+                                    ? 'text-blue-600 underline'
+                                    : 'text-gray-700 hover:text-blue-600'
                                     }`}
                             >
                                 {label}

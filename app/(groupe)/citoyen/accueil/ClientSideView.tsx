@@ -1,10 +1,17 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import dynamic from 'next/dynamic'
+
+const IncidentMap = dynamic(() => import('@/components/IncidentMap'), {
+    ssr: false
+})
 
 export default function ClientSideView({ incidents }: { incidents: any[] }) {
     const [selectedMedia, setSelectedMedia] = useState<{ url: string, type: 'image' | 'video' } | null>(null)
+    const [mapCenter, setMapCenter] = useState<{ lat: number, lng: number } | null>(null)
+    const [statusFilter, setStatusFilter] = useState<string>("all")
 
     const getStatusBadge = (status: string) => {
         switch (status.toLowerCase()) {
@@ -17,11 +24,92 @@ export default function ClientSideView({ incidents }: { incidents: any[] }) {
         }
     }
 
+    const [userPosition, setUserPosition] = useState<{ lat: number | null; lng: number | null }>({
+        lat: null,
+        lng: null
+    })
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserPosition({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    })
+                },
+                (error) => {
+                    console.warn("Geolocation error:", error)
+                }
+            )
+        }
+    }, [])
+
+    const handleSelectIncident = (id: number) => {
+        const incident = incidents.find((i) => i.id === id)
+        if (incident) {
+            setMapCenter({ lat: incident.latitude, lng: incident.longitude })
+        }
+    }
+
+    const filteredIncidents = incidents.filter(incident => {
+        if (statusFilter === "all") return true
+        return incident.status.toLowerCase() === statusFilter.toLowerCase()
+    })
+
+
     return (
         <main className="max-w-7xl mx-auto px-4 py-10">
             <h1 className="text-3xl font-bold text-gray-800 mb-8">
                 Signalements des autres citoyens
             </h1>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                {/* Sélecteur de statut */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Filtrer par statut :</label>
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="p-2 border border-gray-300 rounded-md"
+                    >
+                        <option value="all">Tous</option>
+                        <option value="en attente">En attente</option>
+                        <option value="résolu">Résolu</option>
+                    </select>
+                </div>
+
+                {/* Centrage sur incident */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Centrer sur un incident :</label>
+                    <select
+                        onChange={(e) => handleSelectIncident(parseInt(e.target.value))}
+                        defaultValue=""
+                        className="p-2 border border-gray-300 rounded-md"
+                    >
+                        <option value="" disabled>Choisir un incident</option>
+                        {filteredIncidents.map((incident) => (
+                            <option key={incident.id} value={incident.id}>
+                                {incident.title}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                <section>
+                    <h2 className="text-2xl font-bold text-gray-700 mb-4">Carte des signalements</h2>
+                    <IncidentMap incidents={filteredIncidents}
+                        userPosition={userPosition}
+                        centerOverride={mapCenter} />
+                </section>
+            </motion.section>
+
+            <hr className="my-8 border-gray-300" />
 
             {incidents.length === 0 ? (
                 <p className="text-gray-600">Aucun incident signalé pour le moment.</p>
