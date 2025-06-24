@@ -9,8 +9,10 @@ export default function LayoutWrapper({ children }: { children: ReactNode }) {
     const isLogin = pathname === '/auth/login'
     const isRegister = pathname === '/auth/register'
 
+    const noPadding = isHome || isLogin || isRegister
+
     return (
-        <main className={isHome && isLogin && isRegister ? '' : 'pt-16'}>
+        <main className={noPadding ? '' : 'pt-16'}>
             {children}
         </main>
     )
