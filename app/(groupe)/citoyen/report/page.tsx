@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { MapPin, FileText, LogOut } from "lucide-react"
 import Navbar from '@/components/Navbar'
+import { toast } from "react-hot-toast"
 
 
 const IncidentMap = dynamic(
@@ -122,13 +123,15 @@ export default function ReportPage() {
             })
 
             if (response.ok) {
-                alert('Signalement envoyé avec succès!')
+                toast.success("Signalement envoyé avec succès!")
                 setFormData({
                     title: '',
                     description: '',
                     category: 'Accident',
                     media: null
                 })
+            } else {
+                toast.error("Échec de l'envoie")
             }
         } catch (error) {
             console.error('Erreur:', error)

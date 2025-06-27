@@ -3,14 +3,14 @@ import prisma from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/authOptions'
 
-export async function DELETE(req: Request, context: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions)
 
     if (!session) {
         return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    const incidentId = parseInt(context.params.id)
+    const incidentId = parseInt(params.id)
 
     try {
         // Récupérer l'incident pour vérifier le propriétaire
